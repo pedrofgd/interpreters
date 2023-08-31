@@ -1,0 +1,582 @@
+Building an Interpreter from scratch
+
+Course by Dmitriv Shoshnikov
+
+Part 1: Compilers crash course
+
+Lecture 1: Parsers, ASTs, Interpreters and Compilers
+Program -> 
+Tokenizer (lexical analysis) (also called as Lexer or Scanner) ->
+Stream of Tokens (token is a indivisible unit that consists at token type and the value)
+	exemplos: `if (` geraria os tokens [keywork: “if”] e [op: “(“]
+** análise léxica não verifica se o programa está correto sintaticamente, só transforma os tokens
+
+O que valida se está correto sintaticamente (estrutura do programa) é o Parser (análise sintática)
+Em teoria, a função do Parser é validação da estrutura, mas na prática, produz a próxima “Intermediate Representation”, chamada de Abstract Syntax Tree (AST).
+
+Se um programa escrito em Javascript/Python é legível para nós, uma AST é legível para um compilador/interpretador.
+
+Isso acontece em “static time” (ou “compile time”) -> transformar o programa em várias representações intermediárias e validar se está correto sintaticamente. Nenhuma execução é feita até aqui.
+
+x = 10 * 5 + y
+
+    =
+  x     +
+      *
+    10  5
+
+Sobre parsers:
+- Hand-written (recursive-descent)
+- Automatically generated
+
+Esse curso é sobre "runtime semantics" ("the meaning of a program evalutaion")
+
+- different scope handling (JS and PHP examples)
+    - closures (function have access to free variable data)
+    ```
+    const data = "JS is cool!";
+    function printData() {
+        console.log(data); 
+    }
+    printData();
+    // > JS is cool!
+    ```
+    this same code in PHP would throw an error, cause scopes are handled differently.
+
+
+Interpreters and Compilers
+
+- The fact is COMPILERS DON'T EXECUTE CODE AT ALL
+- Interpreters execute code, that is the difference
+
+"Interpreters implement semantics themselves"
+Interpreters ask questions like "what it means to create a variable?",
+"how a function is called?", "what is a stack call?"
+
+Compileres delegate semantics to a target language,
+hoping that there is a interpreter to that target language
+
+A compiler is just a translator from a language to another
+
+Program 1 ----------> Output
+            interpret P1
+
+Program 1 -----------> Program 2 ----------> Output
+            compile P1 -> P2        interprets P2
+
+At the very low level, there is always a interpreter: the CPU itself
+
+code -> x86/x64 (program directly to machine instructions,
+then CPU should be able to execute then)
+
+
+Interpreters types:
+- AST-based (also called as recursive) (tree-like)
+- Bytecode-interpreters (plain array of enconded instructions,
+    closer to real machines) (machine language-like)
+
+
+Compiler types:
+- Ahead-of-time AOT: all source code is translated to another language before code execution (classic example is C++ compiler)
+    - Compiler may call interpreter directly from compilation stage for evaluate some parts, for example, for optimization
+- Just-in-time (JIT): code generation might be executed at runtime
+- AST-transformers (transpilers -> high-level compiler): transformation at the AST level (add node, remove node...), like in Typescript
+
+
+Lecture 2: AST Interpreters and Virtual Machines
+AST interpreter -> 
+high-level semantics, don't operate low level like
+assembly instructures or memory.
+It use the AST (Abstract Syntax Tree) directly.
+
+---- Static time (compile time) (before code execution)
+Program `print "hello"` ->
+Tokenizer (Lexer) ->
+Tokens ->
+Parser (sintatic analysis) ->
+AST -> (whitout any transformation)
+---- Runtime (the actual code execution)
+Interpreter ->
+Final result "hello"
+
+Exemplo:
+```
+// Source code
+x = 15;
+x + 10 - 5;
+```
+
+```
+// AST
+[program, [
+    [assign, x, 15],
+    [sub,
+        [add, x, 10],
+        5
+    ]
+]]
+```
+
+Existem diferentes formatos de AST...
+desse jeito do exemplo, algo mais parecido com JSON,
+algo mais parecido com XML (eu acho)...
+basta escolher o que mais fizer sentido para o que
+estiver implementando.
+
+>>> astexplorer.net
+
+
+Bytecode interpreter (aka virtual machine)
+the main difference is the format of the program itself
+
+---- Static time (compile time) (before execution)
+Program `print "hello"` ->
+Tokenizer (Lexer) ->
+Tokens ->
+Parser (syntatic analysis) ->
+AST (Abstract Syntax Tree) ->
+Bytecode emitter -> (produces the next intermetiate representaion)
+Bytecode
+    ```
+    push "helo"
+    call print
+    ``` ->
+---- Runtime (the actual execution of the program)
+Interpreter ->
+Result "hello"
+
+Again, the contrast with the AST interpreter is this extra step
+to produce the bytecode.
+
+Why do we need this?
+Bytecode may take less space and faster to traverse than AST (Abstract Syntax Tree) and "allows more granular handling, which is closer to the real machines, to the physical machines"
+
+About virtual machines, there is:
+-> Stack-based machines
+    - Result is "on top of the stack"
+-> Registered-based machines
+    - Set of virtual registers
+    - Result is in "accumulator" register (for example, in Intel architecture, is the register %eax)
+    - Mapped to real via register allocation
+
+Examples:
+
+STACK-BASED:
+```
+// Source code
+x = 15;
+x + 10 -5;
+
+// Abstract Syntax Tree (AST)
+[program, [
+    [assign, x, 15],
+    [sub,
+    [add, x, 10],
+    5
+    ]
+]]
+
+// Bytecode
+push $15
+set %0
+push %0
+push $10
+add
+push $5
+sub
+```
+
+
+// Stack
+-> sp (stack pointer)... in the stack
+-> ip (instruction pointer), in the bytecode
+add, for example, expects two values on the top of the stack,
+    it add tem and push the result back to the stack
+same for the sub instruction
+
+both are binary instructions
+
+
+>>> godbolt.org (compiler explorer)
+
+
+REGISTER-BASED:
+```
+// bytecode
+mov r1, $15
+add r1, $10
+sub r1`, $5
+
+// registers
+---- general purpose registers
+r1 = 0
+r2 = 0
+r3 = 0
+r4 = 0
+
+---- special registers
+ip = 0 (instruction pointer)
+sp = 0 (stack pointer)
+bp = 0 (base pointer)
+```
+
+In most of the cases, the virtual machines and real machines are
+of mixed type
+
+Example, actual Intel architecture it's a register machine and also
+have a stack
+
+Nesse caso, os registradores são atualizados pelo bytecode
+Isso é mais parecido com o que eu já tinha visto nas aulas de
+assembly na faculdade (acho que era em organização de computadores)
+
+
+Lecture 3: Compiulers: AOT, JIT, Transpiler
+
+Ahead-of-time compiler:
+Fuly translate the source code before execution
+
+---- Static time (compile time) (before code execution)
+Source code `print "hello"` ->
+Tokenizer (Lexer) ->
+Tokens ->
+Parser (syntatic analysis) ->
+AST (Abstract Syntax Tree) ->
+[Module] Code generator ->
+Intermetiade representation (may be 1, may be N) ->
+    Each of the IR may have its own code generator
+Native code (x86 / x64, it can be any target arch, like ARM Wasm) ->
+---- Runtime (the actual execution of the code)
+CPU (runtime semantics) ->
+Final result "hello"
+
+
+In compiler engineering, there is also "frontend" and "backend"
+"division":
+
+From Lexer to AST -> Frontend
+Code generation to IRs to native code -> Backend
+
+
+And from this perspective, there is a project called LLVM
+(Low-Level Virtual Machine): reusing existing backend
+
+---- Static time (compile time) (before code execution)
+Source code `print "hello"` ->
+Lexer (Tokenizer) ->
+Tokens ->
+Parser (syntatic analysis) ->
+AST (Abstract Syntax Tree) ->
+LLVM IR (intermediate representation) generator ->
+LLVM IR ->
+LLVM (black box, that fully abstracts its code generation) ->
+x64 / arm / wasm ->
+---- Runtime (the actual code execution)
+CPU ->
+Final result "hello"
+
+
+>>> just a cool thing: "a.out" (clang++, gcc) stands for assembly output
+
+clang++ optimization may eliminate some calculations in the
+assembly output by calling the interpreter at compile time
+
+
+Just-in-time compiler:
+At runtime.
+That is translating the code directly when the program is 
+being executed
+
+When people talk about JIT compiler, they alrady assume there is a
+virtual machine (bytecode interpreter aka "VM")
+
+The point of JIT compiler is to improve performance on
+heavyweight operations.
+
+O que o JIT faz é chamar o módulo "code generator" em runtime
+para uma função específica (por exemplo), que faz operações muito
+pesadas e que é chamada várias vezes. Gera o código nativo em runtime mesmo e executa.
+Da próxima vez que essa função for chamada, não será necessário
+compilar o código novamente em tempo de execução, ao invés disso,
+utilizamos a versão compilada em cache e "pula direto para a CPU"
+
+No caso de operações mais simples, pode ser mais eficiente
+só interpretá-las, ao invés de chamar o code generator
+
+---- Static time (compile time) (before code execution)
+Source code `print "hello"` ->
+Lexer (Tokenizer) ->
+Tokens ->
+Parser (syntatic analysis) ->
+AST (Abstract Syntax Tree) ->
+Bytecode Emitter ->
+Bytecode
+    ```
+    // this looks like stack-based vm btw
+    push "hello"
+    call print
+    ``` ->
+---- Runtime
+Interpreter ->
+Code generator ->
+x64 (or whatever) ->
+CPU ->
+Final result (and then jumps back to interpreter to continue
+    from the next instructions as normal) (this path is just applied
+    for some specific parts of the code, the haviest one probably)
+
+So that was the JIT compiler, that is translation at runtime
+
+
+Abstract Syntax Tree Transformer:
+Provide high-light translation,
+also called as "Transpiler" -> Transformer + compiler
+and the ouput of the AST transformer is another AST:
+
+---- Static time (compile time) (before code execution)
+Source code `print "hello"` ->
+Lexer (tokenizer) ->
+Tokens ->
+Parser (syntatic analysis) ->
+AST (Abstract Syntax Tree) ->
+AST transformer ->
+AST' (read ast dash)
+    important here: this AST' output may be of the same language
+    or of the completely different language (example, new version
+    of Javascript to the old version of Javascript, OR translate
+    Python to Javascript) ->
+Code generator (sometimes called Printer) ->
+High-level source in the different program `print ("hello");`
+    note: HIGH-LEVEL SOURCE IN THE DIFFERENT PROGRAM.
+    this make this code generator module a "high-level" code
+    generator. This still under static time, and this output right
+    here is not native code, but a thing in another language.
+    For example, if the source code is Typescript, this output would
+    be Javascript ->
+Compiler (black box, contains the full transformation cycle) ->
+Final result "hello"
+
+
+This is a pure frontend.
+It operates mainly at the AST, there is no access to the memory
+here, machine instructions etc
+
+It it relying in this black box "Compiler",
+again you hope that there is some interpreter for this translated
+code
+
+
+Wrong question: is Python/Javascript/... interpreted or compiled?
+not language, but instead, implementations
+"we can easily have an interpreter for C++: we can allocate a
+virtual heap in Javascript and implement C++ semantic"
+
+Moreover, if we take, for example, optimizing compiler for C++,
+it is nothing but calling C++ interpreter during the compilation time
+
+The point is "Runtime semantics shoulb be preserved"
+
+
+
+Part 1: checkpoint
+- Interpreted and Compiled
+- Compiuler just translates and don't execute any code
+- What actually executes the code is the interpreter (aka "machine")
+- Abstract Syntax Tree (AST)
+- AST interpreters
+- AST transformers: high-level compiler, "Transpiler"
+- AOT compiler: fully translates before execution
+- JIT compiles: translates at runtime + VM for heavyweight ops
+- Virtual machine (VM): a bytecode interpreter
+- Frontend and Backend in compile engineering
+
+
+Part 2: Interpreters: Basic expressions and variables
+
+Lecture 4: Eva programming language
+AST -> Abstract Syntax TREE 
+- JSON like encoded format (não o formato mais conciso)
+    ```
+    {
+        type: "Assignment",
+        left: {
+            type: "Identifier",
+            value: "total"
+        },
+        right: {
+            type: "Addition",
+            left: {
+                ...
+            }
+        }
+    }
+    ```
+- O formato JSON pode ser levemente alterado para utilizar índices
+    ao invés de propriedades com nome
+    ```
+    {
+        0: "Assignment",
+        1: {
+            0: "Identifier",
+            1: "total"
+        },
+        : {
+            0: "Addition",
+            1: {
+                ...
+            }
+        }
+    }
+    ```
+- Ou pode ser direto um array, não um objeto (map) (sem nenhum nome
+    para cada propriedade)
+- Ao invés de dar nome para os símbolos, podemos utilizar os
+    próprios símbolos
+    ```
+    // Source code
+    total = current + 150;
+
+    // AST, much simpler then the original JSON-like
+    ["set", "total", ["+", "current", 150]]
+    ```
+
+String representation for this AST format: S-expression
+(Symbolic expression):
+```
+(set total (+ current 150))
+```
+
+used in LISP like languages,
+it uses parenthesis instead of brakets and no need of quotes
+
+Meet Eva!
+"A dynamic programming language with simple syntax,
+functional heart and OOP suport"
+
+
+Eval: the core of an interpreter
+stands for "Evaluate",
+obtaining the value of some expression,
+defining the semantics for this expression
+
+Eva expressions:
+```
+// Eva:
+(<type> <op1> <op2> ... <opN)
+        arguments..
+
+(+ 5 10) // addition -> 15
+(set x 15) // assignment
+(if (> x 10) // if
+    (print "ok")
+    (print "err"))
+```
+
+function declaration:
+```
+# Python
+def foo(bar):
+    return bar + 10
+
+// Javascript
+function foo(bar) {
+    return bar + 10;
+}
+
+// Eva
+(def foo (bar)
+        (+ bar 10))
+// All functions in Eva are closures (bindings from the outer scope)
+```
+
+Lambda expressions (anonymous function)
+```
+# Python
+(lambda x: x * x)(10)
+
+// Javascript (arrow function)
+(x => x * x)(10);
+
+// Eva (returns 100)
+(lambda (x) (* x x) 10)
+```
+
+** IILE - Immediately-invoked lambda expression
+
+
+Design goals:
+- Symple syntax: S-expression
+- Everything in EVA will be an expression
+    - Statement vs Expression
+        - In JS, `while` is the statement: an operation that doesn't
+            returns a value. It does something, but there is no actual
+            value produced by this operation
+        - In EVA, everything will be an expression: expression, in
+            contrast with a statement, PRODUCES a value
+            ``` eva
+            (while (< i 10)
+                    (++ i))
+            ```
+
+        Is no possible to assign the value of a while loop in JS:
+        ``` javascript
+        const res = while (i < 10) { i++ } // wrong
+        ```
+        "But it will be pretty legal, actually normal, to do that
+        in Eva":
+        ``` eva
+        (set res (while (< i 10)
+                        (++ i)))
+        ```
+- No explicit return instruction (statement) (as in many functional
+    progamming languages)
+- First-class functions: assign to variables, pass as arguments.
+    return as values
+    ``` js
+    function createCounter() {
+        let i = 0;
+        return () => i++;
+    }
+
+    const count = createCounter();
+
+    count(); // 1
+    count(); // 2
+    ```
+
+    ``` eva
+    // Create closure
+    (def createCounter ()
+        (begin
+            (var i 0)
+            (lambda () (++ i))))
+
+    (var count (createCounter))
+
+    (count) // 1
+    (count) // 2
+    ```
+
+- Static scope: all functions are closures
+- Support Lambda functions, IILES (create a function and directly 
+    call it)
+- Support both Functional programming and Imperative programming
+- Support Namespaces and modules
+- OOP: class-based and prototype-based models
+
+
+
+Lecture 5: Self-evaluation expressions
+BNF Notation: Backus-Naur Form for define runtime semantics
+
+
+
+Lecture 6: Variables and Environments
+
+
+
+
+
+
+
+
