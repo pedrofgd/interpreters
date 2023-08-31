@@ -569,14 +569,108 @@ Design goals:
 Lecture 5: Self-evaluation expressions
 BNF Notation: Backus-Naur Form for define runtime semantics
 
+Exp ::= Number
+        | String
+        | [+ Number Number]
+        ;
 
 
 Lecture 6: Variables and Environments
 
+Exp ::= Number
+        | String
+        | [+ Exp Exp] // The recursive nature of the interpreter
+        | [* Exp Exp]
+        | [- Exp Exp]
+        | [/ Exp Exp]
+        ;
 
 
+Variable declaration (defines a variable in scope):
+```
+# Python
+foo = 10
+
+// Javascript
+let foo = 10;
+
+// Eva
+(var foo 10)
+```
+
+Assignment (assigns a value to a variable):
+```
+# Python
+foo = 10
+
+// JS
+foo = 10;
+
+// Eva
+(set foo 10)
+```
+
+Variable access (refering to a variable, using it):
+    (lookup a variable value)
+```
+# Python
+foo
+square(2)
+
+// JS
+foo;
+square(2);
+
+// Eva
+foo
+(square 2)
+```
+
+VARIABLES -> ENVIRONMENTS:
+Environment: a repository of variables and functions defined in 
+    a scope
+
+Environment Record (atual storage) (also called environment table)
+    - Map to a variable name to the variable value
+    - Optional reference to Parent Environment
+        - environment can inherit other environments (local scope
+            access variables from global scope, for example)
 
 
+Example:
 
+Env 1:
+                         | foo -> 10 
+| Record --------------> | bar -> 20
+| Parent -> Empty
+
+
+and
+Env 2:
+| Record ---------------> | x -> 100
+                          | y -> 200
+                          | z -> 300
+| Parent ---> Env 1
+
+"Env 2" can access variables "x" and "foo"
+"Env 1" cannot access variable "x", but can access variable "foo"
+
+"So this means that the parent link is used to implement inheritence
+of the environments"
+
+
+Environment interface
+    - Define a variable `(var x 10)`
+    - Assign a new value to a variable `(set x 20)`
+    - Lookup a variable `x`
+
+
+"In fact, we can have some variables already preinstalled to the
+global environment before the code execution and usually any
+programming language provides us pre-installed global variables or
+global functions"
+
+Examples in the code at this point:
+- null, true, false, VERSION
 
 

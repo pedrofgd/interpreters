@@ -1,7 +1,15 @@
 const assert = require('assert');
 
+const Environment = require('./Environment');
+
 class Eva {
-    eval(exp) {
+    constructor(global = new Environment()) {
+        this.global = global;
+    }
+
+    eval(exp, env = this.global) {
+        // -----------------------------------
+        // Self-evaluating expressions:
         if (isNumber(exp)) {
             return exp;
         }
@@ -10,10 +18,38 @@ class Eva {
             return exp.slice(1, -1);
         }
 
+        // -----------------------------------
+        // Math operations:
         if (exp[0] === '+') {
             return this.eval(exp[1]) + this.eval(exp[2]);
         }
-        throw 'Uninplemented';
+
+        if (exp[0] === '*') {
+            return this.eval(exp[1]) * this.eval(exp[2]);
+        }
+
+        if (exp[0] === '-') {
+            return this.eval(exp[1]) - this.eval(exp[2]);
+        }
+
+        if (exp[0] === '/') {
+            return this.eval(exp[1]) / this.eval(exp[2]);
+        }
+
+        // -----------------------------------
+        // Variable declaration:
+        if (exp[0] === 'var') {
+            const [_, name, value] = exp;
+            return env.define(name, this.eval(value));
+        }
+
+        // -----------------------------------
+        // Variable access:
+        if (isVariableName(exp)) {
+            return env.lookup(exp);
+        }
+
+        throw `Uninplemented: ${JSON.stringify(exp)}`;
     }
 }
 
@@ -27,15 +63,48 @@ function isString(exp) {
         && exp.slice(-1) === '"';
 }
 
+function isVariableName(exp) {
+    return typeof exp === 'string' 
+        && /^[a-zA-Z][a-zA-Z0-9_]*$/.test(exp);
+}
 
-const eva = new Eva();
+// -----------------------------------
+// Tests: 
+
+const eva = new Eva(new Environment({
+    null: null,
+
+    true: true,
+    false: false,
+
+    VERSION: '0.1',
+}));
 
 // Self-evaluating
 assert.strictEqual(eva.eval(1), 1);
 assert.strictEqual(eva.eval('"hello"'), 'hello');
 
+// Math:
 assert.strictEqual(eva.eval(['+', 1, 5]), 6);
 assert.strictEqual(eva.eval(['+', ['+', 3, 2], 5]), 10);
+assert.strictEqual(eva.eval(['+', ['*', 3, 2], 5]), 11);
+assert.strictEqual(eva.eval(['+', ['-', 3, 2], 5]), 6);
+assert.strictEqual(eva.eval(['+', ['/', 6, 2], 5]), 8);
+
+// Variables:
+assert.strictEqual(eva.eval(['var', 'x', 10]), 10);
+assert.strictEqual(eva.eval('x'), 10);
+
+assert.strictEqual(eva.eval(['var', 'y', 100]), 100);
+assert.strictEqual(eva.eval('y'), 100);
+
+assert.strictEqual(eva.eval('null'), null);
+assert.strictEqual(eva.eval('true'), true);
+assert.strictEqual(eva.eval('false'), false);
+assert.strictEqual(eva.eval('VERSION'), '0.1');
+
+assert.strictEqual(eva.eval(['var', 'isUser', 'true']), true);
+assert.strictEqual(eva.eval(['var', 'z', ['*', 2, 2]]), 4);
 
 console.log('All assertions passed');
 
