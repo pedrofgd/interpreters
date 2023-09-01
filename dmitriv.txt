@@ -674,3 +674,48 @@ Examples in the code at this point:
 - null, true, false, VERSION
 
 
+
+Lecture 7: Blocks: expression groups and Nested Scopes
+
+In previous lecture:
+Exp ::= Number
+        | String
+        | [+ Exp Exp] // The recursive nature of the interpreter
+        | [* Exp Exp]
+        | [- Exp Exp]
+        | [/ Exp Exp]
+        | [var name Exp]
+        | name
+        ;
+
+new here will be:
+[set name Exp] // variable assignment
+[begin Exp...] // blocks
+
+
+Block: group of expressions
+    - Block scope
+        - Entering the block, we create a new environment
+        - Evaluation on the block happens in its own environment
+
+    - Traversing the environment chain (aks scope chain)
+        find variables in the parent environment of a block
+        - Identifier resolution: find the specific environment
+            where the variable is defined
+
+
+About variable declaration and assignment:
+Declaration always creates a variable in local,
+that IS OWN environment
+
+Assignment nedds to first has to resolve the variable and assign
+to THAT SPECIFIC environment
+
+Assignment expression:
+    resolves a variable to assign a value
+
+
+Next lecture: functions,
+"that naturally extend concept of a block and in fact a function is
+just a parameterized block which can be recursively executed"
+
