@@ -6,6 +6,8 @@ const tests = [
     require('./math-test'),
     require('./variables-test'),
     require('./block-test'),
+    require('./if-test'),
+    require('./while-test'),
 ];
 
 const eva = new Eva(new Environment({

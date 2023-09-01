@@ -719,3 +719,8 @@ Next lecture: functions,
 "that naturally extend concept of a block and in fact a function is
 just a parameterized block which can be recursively executed"
 
+
+
+Lecture 8: Control flow: If and While expressions
+
+... now, next lecture may be about functions
