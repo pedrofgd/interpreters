@@ -33,7 +33,7 @@ class Environment {
         }
 
         if (this.parent == null) {
-            throw new ReferenceError(`Variable "${name} is not defined"`);
+            throw new ReferenceError(`Variable "${name}" is not defined`);
         }
 
         return this.parent.resolve(name);

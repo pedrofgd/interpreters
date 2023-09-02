@@ -771,3 +771,16 @@ ListEntries ::= ListEntries Exp
 Now... next class may be about functions
 
 
+
+Lecture 10: Built-in and Native functions
+
+Math operators as built-in functions (global functions)
+    - Since they are called very often in the programs,
+        this operator should be eficient -> moving this operators
+        from the main interpretation rule into built-in functions,
+        the execution/evaluation will be faster
+    - Since they will be just functions in the environment,
+        local environments can provide overwrites (for example,
+        C++ allow overide operators inside classes, "and we will
+        gonna do so as well")
+
