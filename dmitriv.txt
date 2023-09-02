@@ -986,10 +986,92 @@ if (exp[0] === 'def') {
 ```
 
 
+Lecture 13: Call-stack and Recursive calls
+
+Stack-frame
+
+      <- Stack limit (Stack overflow)
+------
+...
+------
+Frame 2
+------
+Frame 1
+------
+Stack
+
+"In fact, our language is already ready able to do recursive calls
+and for this, we currently don't maintain any extra stack structure"
 
 
+In low-level languages, the stack is actually used to 
+store the local variables.
 
+It may store the return address, so the function know
+where to return afters its works is finished.
 
+"Now, our variable storage is a higher abstracted concept called
+Environment"
+
+"Our environments are allocated on the Heap and for this we will
+need to have a garbage collector when a function returns... we
+should be able to destroy the local environment, since is not 
+needed anymore, unless is captured, unless is closure"
+
+Execution stack
+    - for debugging (set breakpoints)
+
+"our interpreter is already very recursive"
+
+Just clarifying terminology:
+- Call-stack 
+    = Execution stack 
+    = Control stack 
+    = Stack
+
+- Activation environment 
+    = Activation Frame
+    = Activation Object
+    = Activation Record
+    = Stack frame
+    = Frame
+
+And the context of the execution stack is not needed if
+not implementing Debbuger support (stacks traces) or don't need
+to interupt functions in the middle.
+
+Another reason the stack is used in lower-level languages is
+performance: "is much faster to create and deallocate the stack frame
+than do the same from the heap"
+
+"The stack will not be needed in our language"
+
+And just a commentary abut tail recursive:
+"tail recursive calls can be optimized to the iterative process
+behind the scene and have just a while-loop and use just one
+stack frame instead of multiple stack frames (that probably is what
+happens in many functional languages, like OCaml)
+
+```
+// Recursive
+(def factorial (x)
+    (if (= x 1)
+        1
+        (* x (factorial (- x 1)))))
+
+// Converted to...
+
+// Iterative
+(def factorial (x)
+    (var result x)
+    (while (> x 1)
+        (-- x)
+        (*= result x))))
+```
+
+"
+
+- [ ] Optional assignment: implement the stack in Eva
 
 
 
