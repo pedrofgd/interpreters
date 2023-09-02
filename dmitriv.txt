@@ -908,5 +908,88 @@ binding is valid"
 
 
 
+Lecture 12: Lambda functions and functional programming
+
+Lambda expression: create an anonymous function,
+best use case for pass such function as callback, for example
+
+And anonymous function expression is a function that don't have
+a name.
+
+```
+# Python
+lambda x: x * x
+
+// Javascript
+x => x * x;
+
+// Eva
+(lambda (x) (* x x))
+```
+
+We can just create a function and immediately call it,
+IILE: Immediately-invoked lamba expression, like:
+```
+# Python
+(lambda: x: x * x)(10)
+
+// Javascript
+(x => x * x)(10)
+
+// Eva
+((lambda (x) (* x x)) 10)
+```
+
+And also should be possible declare a variable with a lambda
+function as a value
+```
+// Eva
+(var square (lambda (x) (* x x)))
+(square 2) // 4
+```
+
+"This expression is very important, because it shows that
+function declaration `def` is nothing but a syntatic sugar for
+a variable declaration installed to the lambda function"
+
+```
+// Expression
+(def <name> <args>
+    <body>)
+
+// Example:
+(def square (x)
+    (* x x))
+
+// Implementation (Transformation):
+(var <name>
+    (lambda <args>
+        <body>))
+```
+
+* This means that the function declaration my just call the lambda
+expression implementation (JIT-transpile), that, just placing here
+for convenience:
+```javascript
+// -----------------------------------
+// Function declaration: (def square (x) (* x x))
+//
+// Syntatic sugar for: (var square (lambda (x) (* x x)))
+if (exp[0] === 'def') {
+    const [_tag, name, params, body] = exp;
+
+    // JIT-transpile to a variable declaration
+    const varExp = ['var', name, ['lambda', params, body]];
+
+    return this.eval(varExp, env);
+}
+```
+
+
+
+
+
+
+
 
 
