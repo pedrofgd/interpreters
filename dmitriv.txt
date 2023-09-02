@@ -784,3 +784,129 @@ Math operators as built-in functions (global functions)
         C++ allow overide operators inside classes, "and we will
         gonna do so as well")
 
+
+
+Lecture 11: User-defined functions, Activation Records and Closures
+
+Blocks are group of some expressions,
+Functions are blocks under some name that can be called later.
+
+Function declaration:
+```eva
+(def run (factor)
+    (begin
+        (var ration 5)
+        (* ration factor)))
+```
+
+Function calls:
+```eva
+(run 10)
+(run 20)
+(run 30)
+```
+
+
+"A function is just an abstraction which groups a set of expressions
+under some name and allow parametrizing those calls".
+
+About Closures:
+```eva
+(var x 10)
+
+(def foo () x)
+
+(def bar ()
+    (begin
+        (var x 20)
+        (+ (foo) x))) /* result should be 30 */
+```
+
+The `foo` function captures the environment on its definitions,
+so x is 10.
+
+Step by step environment modifications on running this code:
+
+`(var x 10)`
+Global env
+--------------
+name | value
+x    | 10
+
+
+`(def foo () x)`
+Global env -----------------------------\ points back to the env 
+--------------                          |
+name | value                            |
+foo  | -----------\                     |
+                  |                     |
+"foo" function    |                     |
+---------------   v points to Code      |
+Code -> (def foo () x)                  |
+Env -> ---------------------------------|
+
+The point is: the environment refers to the function and the function
+refers back to the environment
+
+(
+just in case my draw is terrible:
+Global env
+--------------
+name | value
+x    | 10
+foo  | "foo" function Code
+
+
+"foo" function
+----------------
+Code -> (def foo () x)
+env -> Global env
+)
+
+then...
+
+`(def bar ()
+    (begin
+        (var x 20)
+        (+ (foo) x)))`
+Global env
+-----------------
+name | value
+x      10
+foo    "foo" function Code
+bar    "bar" function Code
+
+
+
+"bar" function
+-----------------
+Code -> (def bar () ...)
+Env -> Global environment
+
+
+
+
+So again...
+"A Closure is a function which saves (captures) the environment where
+it's defined", and once again, all functions in Eva are closures
+
+And also, all functions are evaluated in the new fresh environments.
+
+By convention, the environment that is used when the function is
+called is known as the "Activation Environment"
+
+And the record component which stores the actual local variables
+is known as Activation Record
+
+And about scope in computer programming (Wikipedia):
+"scope of a name binding is the part of a program where the name
+binding is valid"
+
+**binding -> "vinculativo"
+
+***Revisit this lecture a couple times to understand everything...
+
+
+
+
+

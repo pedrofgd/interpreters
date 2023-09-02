@@ -71,6 +71,20 @@ class Eva {
         }
 
         // -----------------------------------
+        // Function declaration: (def square (x) (* x x))
+        if (exp[0] === 'def') {
+            const [_tag, name, params, body] = exp;
+
+            const fn = {
+                params,
+                body,
+                env, // Closure!
+            };
+
+            return env.define(name, fn);
+        }
+
+        // -----------------------------------
         // Function calls:
         if (Array.isArray(exp)) {
             const fn = this.eval(exp[0], env);
@@ -82,9 +96,30 @@ class Eva {
             if (typeof fn === 'function') {
                 return fn(...args);
             }
+
+            // 2. User-defined function:
+            const activationRecord = {};
+
+            fn.params.forEach((param, index) => {
+                activationRecord[param] = args[index];
+            })
+
+            const activationEnv = new Environment(
+                activationRecord,
+                fn.env // static scope!
+            );
+
+            return this._evalBody(fn.body, activationEnv);
         }
 
         throw `Uninplemented: ${JSON.stringify(exp)}`;
+    }
+
+    _evalBody(body, env) {
+        if (body[0] === 'begin') {
+            return this._evalBlock(body, env);
+        }
+        return this.eval(body, env);
     }
 
     _evalBlock(block, env) {
