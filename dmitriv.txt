@@ -724,3 +724,50 @@ just a parameterized block which can be recursively executed"
 Lecture 8: Control flow: If and While expressions
 
 ... now, next lecture may be about functions
+
+
+Lecture 9: Back to parsers: S-expression to AST
+
+This is about accepting our program (eva source code in the tests)
+as string (not javascript array), in the S-expression format.
+
+** S-expression = Symbolic expression
+
+syntatic-cli tool: https://github.com/DmitrySoshnikov/syntax#lexical-grammar-and-tokenizer
+
+the grammar is defined in `/parser/eva-grammar.js`,
+the following command generates the javascript parser, that can
+be used in the tests:
+
+```bash
+syntax-cli --grammar parser/eva-grammar.bnf --mode LALR1 --output parser/evaParser.js
+```
+
+Is also possible to use syntatic-cli to test some content directly:
+```bash
+syntax-cli --grammar parser/eva-grammar.bnf --mode LALR1 --parse '(+ 5 foo)' --tokenize
+```
+
+Syntatic grammar - BNF (Backus-Naur Form) grammar:
+Exp ::= Atom
+        | List
+        ;
+
+Atom ::= Number
+        | String
+        | Symbol
+        ;
+
+List ::= ( ListEntries )
+
+ListEntries ::= ListEntries Exp
+                | e /* empty */
+                ;
+
+(all defined in `eva/parser/eva-grammar.js`)
+
+
+
+Now... next class may be about functions
+
+
