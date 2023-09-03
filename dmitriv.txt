@@ -1266,8 +1266,70 @@ component of the class environment
 
 
 
+Lecture 17: Code isolation: Modules and Imports
+
+A module is a namespace (we all assume, under the hood, is an
+environment),
+
+so, "a module is nothing but an environent"
+
+and "Environment s the technical mechanism which is used as an
+implementation detail for multiple abstractions: the environment
+themselves, for classes, for objects and now modules"
 
 
+Module objects:
+- a named first-class environment
+
+Example:
+```eva
+// `Math` module declaration:
+(module Math
+    (begin
+        (def abs (value)
+            (if (< value 0)
+                (- value)
+                value))
+
+        (def square (x)
+            (* x x))
+
+        (var PI 3.1415962)))
+)
+```
+
+and:
+```eva
+// `Math` module import:
+(import Math)
+(prop Math PI) // 3.1415962
+```
+
+"And since module is a environment, we can use our "prop"
+expresion which can access generically properties of any
+environment. So we use `prop` passing the module name and the
+method we want to access"
+
+
+"A module is just an environment, so we create an empty
+environment where the parent is set to the environment where
+thi module is being evaluated, so if  module is created in the
+global context, this will be te global environment. If the module
+is created inside some function, then the environment wil be
+the activation environment of that function"
+
+Assignments:
+- [ ] Implement cached version for modules
+- [ ] Import to import only function names should be imported
+    `(import (abs) Math)`
+- [ ] Introduce `export` statement to define which specific function 
+    or properties i want to export
+    `(exports
+        abs
+        square)`
+    or have export keywoard in front of each expression
+    `(export def square (x)
+        (* x x))`
 
 
 

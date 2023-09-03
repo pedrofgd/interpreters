@@ -4,6 +4,9 @@
  * AST interpreter.
  */
 
+const fs = require('fs');
+const evaParser = require('./parser/evaParser');
+
 const Environment = require('./Environment');
 const Transformer = require('./transform/Transformer');
 
@@ -243,6 +246,38 @@ class Eva {
         if (exp[0] == 'super') {
             const [_tag, className] = exp;
             return this.eval(className, env).parent;
+        }
+
+        // -----------------------------------
+        // Module declaration: (module <name> <body>)
+        if (exp[0] === 'module') {
+            const [_tag, name, body] = exp;
+
+            // The parent environment is set to the environment
+            // where this module is being evaluated
+            const moduleEnv = new Environment({}, env);
+
+            this._evalBody(body, moduleEnv);
+
+            return env.define(name, moduleEnv);
+        }
+
+        // -----------------------------------
+        // Module import: (import <name>)
+        // (import (expor1, export2, ...) <name>)
+        if (exp[0] === 'import') {
+            const [_tag, name] = exp;
+
+            const moduleSrc = fs.readFileSync(
+                `${__dirname}/modules/${name}.eva`,
+                'utf-8',
+            );
+
+            const body = evaParser.parse(`(begin ${moduleSrc})`);
+
+            const moduleExp = ['module', name, body];
+
+            return this.eval(moduleExp, this.global);
         }
 
         // -----------------------------------

@@ -15,6 +15,8 @@ const tests = [
     require('./increment-test'),
     require('./decrement-test'),
     require('./class-test'),
+    require('./module-test'),
+    require('./import-test'),
 ];
 
 const eva = new Eva();
