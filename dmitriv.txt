@@ -1074,4 +1074,83 @@ happens in many functional languages, like OCaml)
 - [ ] Optional assignment: implement the stack in Eva
 
 
+***Revist this lecture a couple times
+
+
+
+Lecture 14: Syntatic sugar: Switch, For, Inc, Dec operators
+
+We already have a syntatic sugar for `def` keyword
+
+Syntatic sugar:
+    - "Sugars can implement the ergonomics of our language"
+    - "Is a programming language construct which allows us doing
+    the same what we already can do in our language, but in a nicer
+    syntatic form"
+    - Is a very powerful construct. For example, we have seen that
+    all transpiles are build in top of syntatic sugar mechanism
+
+Switch:
+```
+// Expression:
+(switch (<cond1><block1>)
+        ...
+        (<cond2><block2>)
+        (else <alternate>))
+
+// Example:
+(switch ((> x 1) 100)
+        ((= x 1) 200)
+        (else 0))
+
+// Implementation (Transformation):
+(if <cond1>
+    <block1>
+    ...
+    (if <condN>
+        <blockN>
+        <alternate>))
+```
+
+For loop:
+```
+// Expression:
+(for <init>
+     <condition>
+     <modifier>
+     <exp>)
+
+// Example:
+(for (var x 10)
+     (> x 0)
+     (-- x)
+     (print x))
+
+// Implementation (Transformation):
+(begin
+    <init>
+    (while <condition>
+        <exp>
+        <modifier>))
+```
+
+Assignments - implement the following syntatic sugars:
+- [x] for
+- [x] increment `(++ foo)` and `(+= foo inc)`
+- [x] decrement `(-- foo)` and `(-= foo dec)`
+
+Again, the purpose of syntatic sugar is to make the language more
+ergonomic with a better form to write an existing expression.
+
+"more convenient language while having all the runtime already
+available to the same",
+"syntatic sugar gives us a nicer form"
+
+
+
+
+
+
+
+
 

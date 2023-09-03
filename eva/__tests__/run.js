@@ -1,5 +1,4 @@
 const Eva = require('../Eva');
-const Environment = require('../Environment');
 
 const tests = [
     require('./self-eval-test'),
@@ -11,6 +10,10 @@ const tests = [
     require('./built-in-function-test'),
     require('./user-defined-function-test'),
     require('./lambda-function-test'),
+    require('./switch-test'),
+    require('./for-loop-test'),
+    require('./increment-test'),
+    require('./decrement-test'),
 ];
 
 const eva = new Eva();
