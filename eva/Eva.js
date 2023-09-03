@@ -239,6 +239,13 @@ class Eva {
         }
 
         // -----------------------------------
+        // Super expression: (super <className>)
+        if (exp[0] == 'super') {
+            const [_tag, className] = exp;
+            return this.eval(className, env).parent;
+        }
+
+        // -----------------------------------
         // Function calls:
         //
         // (print "Hello World!")

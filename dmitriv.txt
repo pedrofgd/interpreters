@@ -1249,6 +1249,24 @@ y            20
         the parent class
 
 
+***Revisit this lecture again a couple more times
+
+
+
+Lecture 16: Class inheritance and Super calls
+
+Again, classes, from the implementation perspective, are nothing
+but an environment, and objects are environments, where the parent
+link is set to the class
+
+The `super`-expression is just an API to return the parent
+component of the class environment
+
+"There is no any other magic here"
+
+
+
+
 
 
 
