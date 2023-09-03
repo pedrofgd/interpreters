@@ -14,6 +14,7 @@ const tests = [
     require('./for-loop-test'),
     require('./increment-test'),
     require('./decrement-test'),
+    require('./class-test'),
 ];
 
 const eva = new Eva();

@@ -4,6 +4,8 @@ Course by Dmitriv Shoshnikov
 
 Part 1: Compilers crash course
 
+# Compilers crash course
+
 Lecture 1: Parsers, ASTs, Interpreters and Compilers
 Program -> 
 Tokenizer (lexical analysis) (also called as Lexer or Scanner) ->
@@ -393,6 +395,8 @@ Part 1: checkpoint
 
 Part 2: Interpreters: Basic expressions and variables
 
+# Interpreters: Basic expressions and variables
+
 Lecture 4: Eva programming language
 AST -> Abstract Syntax TREE 
 - JSON like encoded format (não o formato mais conciso)
@@ -771,6 +775,7 @@ ListEntries ::= ListEntries Exp
 Now... next class may be about functions
 
 
+# Functions and Functional programming
 
 Lecture 10: Built-in and Native functions
 
@@ -1145,6 +1150,103 @@ ergonomic with a better form to write an existing expression.
 "more convenient language while having all the runtime already
 available to the same",
 "syntatic sugar gives us a nicer form"
+
+
+# Object-oriented programming
+
+Lecture 15: Object-oriented Eva: Classes
+
+By now we already supports:
+- first-class functions (functions assigned to variables)
+- lambda functions (anonymous functions, that don't have a name)
+- closures (colect the scope where function were defined)
+- ...
+
+"In general, there are 2 main approaches to provide support for
+object-oriented progamming":
+- Class-based (Java, C++, Python etc)
+    - Classes and Instances
+        - Inheritance chains
+- Prototype-based OOP (Javascript, Lua etc)
+    - Objets and Prototypes
+        - Delegation chains
+    - classes in javascrit are just a syntatic sugar for the
+        prototype-based inheritance
+
+
+* Eva will have both of them
+
+
+Class-based:
+"From the implementation perpective, a Class is just an environment".
+
+again, cause that's important: "from the implementation perpective, 
+classes and instances are nothing but in other environments"
+
+- Class is a named environment which can be instantiaded and create
+    objects
+
+
+Recapting environments:
+- Environment Record (actual storage)
+- Optional reference to Parent Environment (environment chain)
+
+- it's just the namespace where properties and methods are
+    just functions and methods belonginh to this environment
+
+
+Example:
+
+```eva
+(class Point null
+    (begin
+        (def constructor (self x y)
+            (begin
+                (set (prop self x) x)
+                (set (prop self y) y)))
+            
+        (def calc (self)
+            (+ (prop self x)
+                (prop self y)))))
+
+(var p (new Point 10 20))
+((prop p calc) p)
+```
+
+Environment Rercod:
+
+Global env
+------------
+Name | Value
+Point  "Point" env (class)
+p      "p" env (instance) 
+
+
+"Point" env (class)
+-------------------------
+Name        |   Value
+constructor     <function>
+calc            <function>
+       ^
+       |
+       |
+       |
+"p" env (instance)
+-----------------------
+Name     |   Value
+x            10
+y            20
+
+** The parent link of the instance environment ("p" env) 
+    is set to the class environment ("Point" env)
+    - "Trhough this parent environment, which points to the class,
+        instances may found methods defined on the class and call
+        those methods in the needed context"
+** The parent link is used to implement inheritance
+    - If we have a base class, the parent link is null
+        (inherit from global)
+    - Otherwise the parent link of this environment can be set to
+        the parent class
 
 
 

@@ -39,10 +39,32 @@ class Eva {
         }
 
         // -----------------------------------
-        // Variable update: (set foo 20)
+        // Variable update: 
+        //
+        // (set foo 20)
+        // (set (prop this foo) 20)
         if (exp[0] === 'set') {
-            const [_, name, value] = exp;
-            return env.assign(name, this.eval(value, env));
+            const [_, ref, value] = exp;
+
+            // Assignment to a property:
+            if (ref[0] === 'prop') {
+                const [_tag, instance, propName] = ref;
+                const instanceEnv = this.eval(instance, env);
+
+                // Affects only the instance environment,
+                // so we use define method
+                return instanceEnv.define(
+                    propName,
+                    this.eval(value, env),
+                );
+            }
+
+            // Simple assignment:
+            //
+            // May affect variables from the outer environments,
+            // so we use assign, that will resolve the variable
+            // in the environment chain
+            return env.assign(ref, this.eval(value, env));
         }
 
         // -----------------------------------
@@ -163,7 +185,59 @@ class Eva {
         }
 
         // -----------------------------------
+        // Class declaration: (class <name> <parent> <body>)
+        if (exp[0] === 'class') {
+            const [_tag, name, parent, body] = exp;
+
+            const parentEnv = this.eval(parent) || env;
+
+            const classEnv = new Environment({}, parentEnv);
+
+            // Body is evaluated in the class environment
+            this._evalBody(body, classEnv);
+
+            // Class is accessible by name
+            return env.define(name, classEnv);
+        }
+
+        // -----------------------------------
+        // Class instantiation: (new <class> <arguments>...)
+        if (exp[0] === 'new') {
+            const classEnv = this.eval(exp[1], env);
+
+            // An instance of a class is an environment!
+            // The `parent` component of the instance environment
+            // is set to its class
+            const instanceEnv = new Environment({}, classEnv);
+
+            const args = exp
+                .slice(2)
+                .map(arg => this.eval(arg, env));
+
+            this._callUserDefinedFuntion(
+                classEnv.lookup('constructor'),
+                [instanceEnv, ...args],
+            );
+
+            return instanceEnv;
+        }
+
+        // -----------------------------------
+        // Property access: (prop <instance> <name>)
+        if (exp[0] === 'prop') {
+            const [_tag, instance, name] = exp;
+
+            const instanceEnv = this.eval(instance, env);
+
+            return instanceEnv.lookup(name);
+        }
+
+        // -----------------------------------
         // Function calls:
+        //
+        // (print "Hello World!")
+        // (+ x 5)
+        // (> foo bar)
         if (Array.isArray(exp)) {
             const fn = this.eval(exp[0], env);
             const args = exp
@@ -176,21 +250,25 @@ class Eva {
             }
 
             // 2. User-defined function:
-            const activationRecord = {};
-
-            fn.params.forEach((param, index) => {
-                activationRecord[param] = args[index];
-            })
-
-            const activationEnv = new Environment(
-                activationRecord,
-                fn.env // static scope!
-            );
-
-            return this._evalBody(fn.body, activationEnv);
+            return this._callUserDefinedFuntion(fn, args);
         }
 
         throw `Uninplemented: ${JSON.stringify(exp)}`;
+    }
+
+    _callUserDefinedFuntion(fn, args) {
+        const activationRecord = {};
+
+        fn.params.forEach((param, index) => {
+            activationRecord[param] = args[index];
+        })
+
+        const activationEnv = new Environment(
+            activationRecord,
+            fn.env // static scope!
+        );
+
+        return this._evalBody(fn.body, activationEnv);
     }
 
     _evalBody(body, env) {
