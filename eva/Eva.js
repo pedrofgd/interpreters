@@ -13,6 +13,12 @@ class Eva {
         this._transformer = new Transformer();
     }
 
+    // Evaluates global code wrapping into a block
+    evalGlobal(exp) {
+        return this._evalBlock(exp, this.global);
+    }
+
+    // Evaluates an expression in the given environment
     eval(exp, env = this.global) {
         // -----------------------------------
         // Self-evaluating expressions:
