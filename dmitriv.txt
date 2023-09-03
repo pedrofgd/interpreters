@@ -1333,6 +1333,97 @@ Assignments:
 
 
 
+Lecture 18: Final executable and specification
+
+This lecture is about implementing the CLI support for
+call eva interpreter on `.eva` files
+
+Just a note that the `#!` thing is a "Sheband" (or a "Hashbang"),
+and basically will use node to execute the commands
+
+*** Take a look about this:
+- [ ] Shebang: https://pt.wikipedia.org/wiki/Shebang
+
+```bash
+chmod +x /bin/eva
+```
+
+Now implementaton details at this point are completely hidden,
+since users can just call our Eva command line utility and is able
+to execute and correctly evaluate it
+
+Some test expressions:
+```bash
+./bin/eva -e '(var x 10) (print x)'
+./bin/eva -e '(var x 10) (print (* x 15))'
+./bin/eva -e '(print ((lambda (x) (* x x)) 2))'
+./bin/eva -f ./test.eva
+```
+
+Assginments (TODOs to continue designing the language):
+- [ ] Other data structures:
+    - Prototype-based inheritance 
+        (object can directly inherit from another object 
+            and a class is not needed)
+        ```eva
+        (var base (object (value 100)))
+
+        (object
+            (x 10)
+            (y 20)
+            (__proto__ base))
+        ```
+
+    - Lists (can be implemented as just a syntatic sugar for
+        calling an instance of a very basic array or list classs)
+        ```eva
+        (var values (list 42 "Hello" foo))
+
+        (prop values 0) // 42
+        (prop values 1) // "Hello"
+
+        // Or:
+        (idx values 0) // 42
+        (idx values 1) // "Hello"
+        ```
+
+    - Async functions
+        ```evo
+        (def async genValues (x) ...)
+        ```
 
 
+Eva specification
+
+"After implementing a language, we need to write a specification,
+which would be a cannonical documentation of a language"
+
+- Self-evaluating expressions
+- Binary operations (math, comparison, logical)
+- Variable declaration
+- Variable assignment
+- Variable access
+- Block expression (group of expressions with its own environment)
+- Branches: if
+- Branches: switch (syntatic sugar)
+- Loops: while
+- Loops: for (syntatic sugar)
+- Lambda functions (anonymous function expressions)
+- Function declaration (syntatic sugar for variable declaration with lamba)
+- Function calls (native and user defined functions)
+- Classes (environment with a name and can be instantiated)
+- Modules (just another named environment that can be imported)
+
+
+** By now we have fully working AST interpreter,
+    but the Tree structure may not be space effecient,
+    moreover, recursive nature of the interpreter may not be the
+    fastest
+
+Production virtual machines prefer the plain array of bytecode instructions instead of the AST format.
+
+
+Reference:
+Essentials of Interpretation - Building an Interpreter from scratch:
+https://dmitrysoshnikov.teachable.com/courses/enrolled/795712
 
